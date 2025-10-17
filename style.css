@@ -1,0 +1,212 @@
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f9f9f9;
+  text-align: center;
+  padding: 0px 20px
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2.0rem;
+  font-weight: 800;
+  margin-bottom: 0.0em;
+}
+
+.subtitle {
+  font-size: 1.0rem;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 1.0em;
+}
+
+.input-area {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 1em;
+}
+
+#answerInput {
+  width: 450px;        /* 원하는 길이 (px, %, rem 등 가능) */
+  font-size: 16px;     /* 글자 크기도 조절 가능 */
+  padding: 10px;       /* 안쪽 여백 */
+  border-radius: 6px;  /* 모서리 둥글게 */
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* 1. 자동완성 항목 텍스트 왼쪽 정렬 */
+.awesomplete ul {
+  text-align: left;
+  padding-left: 0.0em; /* 패딩 없음 */
+}
+
+/* 자동완성 항목 리스트 들여쓰기 */
+.awesomplete li {
+  padding-left: 2rem !important;
+  text-align: left;
+  background: white;
+  color: #333;
+}
+
+/* 2. 하이라이트 제거 (mark 무시) */
+.awesomplete mark {
+  background: none;
+  color: inherit;
+  font-weight: inherit;
+}
+
+/* 선택 중인 자동완성 항목(포커스 상태) 하이라이트 제거 */
+.awesomplete mark {
+  background: none !important;
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+
+input[type="text"] {
+  padding: 10px;
+  font-size: 1rem;
+  width: 60%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 1rem;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tries {
+  margin-bottom: 1em;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* 도전 circle 스타일 설정 */
+.try-circles {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+
+.try-circle {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: #c7c7cc; /* 기본 회색 */
+  border: 1.8px solid white;
+  box-shadow: 0 0 0 2px #c7c7cc;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, color 0.5s;
+  user-select: none;
+}
+
+/* 활성화 색상 (거리별) */
+.try-circle.correct { background-color: #34c759; border: 1.8px solid white; box-shadow: 0 0 0 2px #34c759; color: white; } /* 초록색 (정답) */
+.try-circle.near { background-color: #ffcc00; border: 1.8px solid white; box-shadow: 0 0 0 2px #ffcc00; color: white; }
+.try-circle.mid  { background-color: #ff8d28; border: 1.8px solid white; box-shadow: 0 0 0 2px #ff8d28; color: white; }
+.try-circle.far  { background-color: #ff383c; border: 1.8px solid white; box-shadow: 0 0 0 2px #ff383c; color: white; }
+
+.mapbox-container {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#result {
+  font-size: 1.1rem;
+  color: #333;
+  margin-top: 15px;
+}
+
+/* 지도와 마스크 컨테이너 */
+#mapWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* 실제 지도 */
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* 지도 밖으로 나가려 할 때 표시되는 경계 효과 */
+#boundaryMask {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10;
+  pointer-events: none;
+  border-radius: 10px;
+  box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.custom-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.marker-label {
+  font-size: 11px;
+  background: rgba(255,255,255,0.85);
+  padding: 0px 4px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
+.marker-dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid #f2f2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+
+.main-marker .marker-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #000;
+  border: 2px solid #fff;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
