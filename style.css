@@ -7,7 +7,7 @@ body {
 }
 
 .container {
-  max-width: 600px;
+  max-width:480px;
   margin: 0 auto;
 }
 
@@ -25,71 +25,42 @@ body {
 }
 
 .input-area {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 1em;
+  display: flex;               /* 가로 정렬 */
+  align-items: center;         /* 세로 가운데 맞춤 */
+  justify-content: center;     /* 중앙 정렬 */
+  gap: 10px;                   /* input과 button 사이 여백 */
+  width: 100%;                 /* container 폭 따라감 */
+  max-width: 600px;            /* 지도 폭과 동일 */
+  margin: 0 auto 1em;          /* 가운데 정렬 + 아래쪽 여백 */
+  flex-wrap: nowrap;           /* 줄바꿈 금지 */
+  box-sizing: border-box;
 }
 
 #answerInput {
-  width: 450px;        /* 원하는 길이 (px, %, rem 등 가능) */
-  font-size: 16px;     /* 글자 크기도 조절 가능 */
-  padding: 10px;       /* 안쪽 여백 */
-  border-radius: 6px;  /* 모서리 둥글게 */
+  flex: 1;                     /* 남은 공간 모두 차지 */
+  min-width: 0;                /* overflow 방지 */
+  font-size: 16px;
+  padding: 10px;
+  border-radius: 6px;
   border: 1px solid #ccc;
   box-sizing: border-box;
 }
 
-/* 1. 자동완성 항목 텍스트 왼쪽 정렬 */
-.awesomplete ul {
-  text-align: left;
-  padding-left: 0.0em; /* 패딩 없음 */
-}
-
-/* 자동완성 항목 리스트 들여쓰기 */
-.awesomplete li {
-  padding-left: 2rem !important;
-  text-align: left;
-  background: white;
-  color: #333;
-}
-
-/* 2. 하이라이트 제거 (mark 무시) */
-.awesomplete mark {
-  background: none;
-  color: inherit;
-  font-weight: inherit;
-}
-
-/* 선택 중인 자동완성 항목(포커스 상태) 하이라이트 제거 */
-.awesomplete mark {
-  background: none !important;
-  color: inherit !important;
-  font-weight: inherit !important;
-}
-
-input[type="text"] {
-  padding: 10px;
-  font-size: 1rem;
-  width: 60%;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
 button {
-  padding: 10px 15px;
-  font-size: 1rem;
+  flex-shrink: 0;              /* 버튼 줄어들지 않게 */
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
   background-color: black;
   color: white;
-  border: none;
-  border-radius: 4px;
   cursor: pointer;
+  height: 100%;
+  transition: background 0.2s ease;
 }
 
-.tries {
-  margin-bottom: 1em;
-  color: #666;
-  font-size: 0.95rem;
+button:hover {
+  background-color: #333;      /* hover 시 살짝 어두워짐 */
 }
 
 /* 도전 circle 스타일 설정 */
@@ -123,6 +94,7 @@ button {
 .try-circle.mid  { background-color: #ff8d28; border: 1.8px solid white; box-shadow: 0 0 0 2px #ff8d28; color: white; }
 .try-circle.far  { background-color: #ff383c; border: 1.8px solid white; box-shadow: 0 0 0 2px #ff383c; color: white; }
 
+/* 지도 컨테이너 */
 .mapbox-container {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -150,18 +122,6 @@ button {
 #map {
   width: 100%;
   height: 100%;
-}
-
-/* 지도 밖으로 나가려 할 때 표시되는 경계 효과 */
-#boundaryMask {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 10;
-  pointer-events: none;
-  border-radius: 10px;
-  box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.4);
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
 .custom-marker {
