@@ -79,7 +79,7 @@ function createLabeledMarker(cityObj, distanceKm) {
 
 // ✅ 대한민국 중심 좌표와 줌 레벨 (당신이 직접 입력)
 const koreaCenter = [127.76469909658498, 36.35893672161413]; // 남한 국토 중심 충청북도 옥천군 청성면 장연리 (대한민국 국토 중심 국토정중앙천문대 (128.0298, 38.0688))
-const koreaZoom = 5.5; // 전국 보이게 줌아웃 레벨 설정
+const koreaZoom = 5; // 전국 보이게 줌아웃 레벨 설정
 
 //let currentZoom = 15.5; // 문제 줌 레벨
 //let centerCoords = [128.5780871349555, 35.87392573964598]; // 대구 달성공원
