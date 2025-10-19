@@ -65,8 +65,8 @@ function haversine(lat1, lon1, lat2, lon2) {
   const lat2Rad = toRad(lat2);
 
   const a = Math.sin(dLat / 2) ** 2 +
-            Math.cos(lat1Rad) * Math.cos(lat2Rad) *
-            Math.sin(dLon / 2) ** 2;
+    Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+    Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -107,7 +107,7 @@ function createLabeledMarker(cityObj, distanceKm) {
   el.className = 'custom-marker';
 
   const color = distanceKm <= 50 ? '#ffcc00' : distanceKm <= 100 ? '#ff8d28' : '#ff383c';
-  const currentTry = 7 - tries; // try 횟수 마킹용
+  const currentTry = 6 - tries; // try 횟수 마킹용
 
   el.innerHTML = `
     <div class="marker-label">${cityObj.tag}</div>
@@ -357,72 +357,72 @@ function checkAnswer() {
     return;
   }
 
-// 🔹 [4] 정답 입력 시
-if (normalize(userInput) === normalize(correctAnswer)) {
-  const correctCity = citiesData.find(city => normalize(city.name) === normalize(correctAnswer));
-  if (!correctCity) {
-    console.warn("정답 도시를 찾지 못했습니다:", correctAnswer);
-    return;
+  // 🔹 [4] 정답 입력 시
+  if (normalize(userInput) === normalize(correctAnswer)) {
+    const correctCity = citiesData.find(city => normalize(city.name) === normalize(correctAnswer));
+    if (!correctCity) {
+      console.warn("정답 도시를 찾지 못했습니다:", correctAnswer);
+      return;
+    }
+
+    resultEl.innerText = "🎉 정답입니다!";
+    isAnsweredCorrectly = true;
+
+    // ✅ 초록색 try-circle 표시
+    const currentTry = 6 - tries;
+    const circle = document.querySelector(`.try-circle[data-index="${currentTry}"]`);
+    if (circle) circle.classList.add("correct");
+
+    // 한국 레벨 지도 축소
+    flyToKorea(koreaCenter, koreaZoom);
+
+    // ✅ 정답 마커 추가
+    addCorrectMarker(correctCity);
+
+    // ✅ 정답 메시지 출력
+    endGameMessage(true);
   }
 
-  resultEl.innerText = "🎉 정답입니다!";
-  isAnsweredCorrectly = true;
+  // 🔹 [5] 오답 입력 시
+  else {
+    tries--; // 기회 차감
 
-  // ✅ 초록색 try-circle 표시
-  const currentTry = 7 - tries;
-  const circle = document.querySelector(`.try-circle[data-index="${currentTry}"]`);
-  if (circle) circle.classList.add("correct");
+    const correctCity = citiesData.find(city => normalize(city.name) === normalize(correctAnswer));
+    const guessedCity = match; // 오답 도시 객체
 
-  // 한국 레벨 지도 축소
-  flyToKorea(koreaCenter, koreaZoom);
+    const distance = haversine(
+      guessedCity.latitude,
+      guessedCity.longitude,
+      correctCity.latitude,
+      correctCity.longitude
+    );
 
-  // ✅ 정답 마커 추가
-  addCorrectMarker(correctCity);
+    // 시도 카운트 (1~6)
+    const currentTry = 6 - tries;
 
-  // ✅ 정답 메시지 출력
-  endGameMessage(true);
-}
+    // 거리별 색상 분류
+    let colorClass;
+    if (distance <= 50) colorClass = "near";
+    else if (distance <= 100) colorClass = "mid";
+    else colorClass = "far";
 
-// 🔹 [5] 오답 입력 시
-else {
-  tries--; // 기회 차감
+    // 시도 원 색상 업데이트
+    const circle = document.querySelector(`.try-circle[data-index="${currentTry}"]`);
+    if (circle) circle.classList.add(colorClass);
 
-  const correctCity = citiesData.find(city => normalize(city.name) === normalize(correctAnswer));
-  const guessedCity = match; // 오답 도시 객체
-
-  const distance = haversine(
-    guessedCity.latitude,
-    guessedCity.longitude,
-    correctCity.latitude,
-    correctCity.longitude
-  );
-
-  // 시도 카운트 (1~6)
-  const currentTry = 6 - tries;
-
-  // 거리별 색상 분류
-  let colorClass;
-  if (distance <= 50) colorClass = "near";
-  else if (distance <= 100) colorClass = "mid";
-  else colorClass = "far";
-
-  // 시도 원 색상 업데이트
-  const circle = document.querySelector(`.try-circle[data-index="${currentTry}"]`);
-  if (circle) circle.classList.add(colorClass);
-
-  // 결과 문장 업데이트
-  let formattedDistance;
-  if (distance >= 100) {
-    // 1의 자리 반올림 (136.5 → 140)
-    formattedDistance = Math.round(distance / 10) * 10;
-  } else if (distance >= 10) {
-    // 10~99.9 사이: 소수점 제거 (24.2 → 24)
-    formattedDistance = Math.floor(distance);
-  } else {
-    // 10 미만: 소수점 1자리 (9.37 → 9.4)
-    formattedDistance = distance.toFixed(1).replace(/\.0$/, '');
-  }
-  resultEl.innerText = `${attachJosa(guessedCity.tag, "은는")} ${formattedDistance} km 떨어져 있습니다.`;
+    // 결과 문장 업데이트
+    let formattedDistance;
+    if (distance >= 100) {
+      // 1의 자리 반올림 (136.5 → 140)
+      formattedDistance = Math.round(distance / 10) * 10;
+    } else if (distance >= 10) {
+      // 10~99.9 사이: 소수점 제거 (24.2 → 24)
+      formattedDistance = Math.floor(distance);
+    } else {
+      // 10 미만: 소수점 1자리 (9.37 → 9.4)
+      formattedDistance = distance.toFixed(1).replace(/\.0$/, '');
+    }
+    resultEl.innerText = `${attachJosa(guessedCity.tag, "은는")} ${formattedDistance} km 떨어져 있습니다.`;
 
     // ✅ AutoComplete.js 강제 초기화
     requestAnimationFrame(() => {
@@ -436,39 +436,39 @@ else {
       }, 80);
     });
 
-  // 오답 마커 표시
-  const marker = createLabeledMarker(guessedCity, distance);
-  wrongMarkers.push(marker);
+    // 오답 마커 표시
+    const marker = createLabeledMarker(guessedCity, distance);
+    wrongMarkers.push(marker);
 
-  // ✅ 마지막 시도(tries == 0)이면 바로 종료 처리
-  if (tries === 0) {
-    // 한국 레벨 지도 축소
-  flyToKorea(koreaCenter, koreaZoom);
-  // 정답 마커 추가
-  addCorrectMarker(correctCity);
+    // ✅ 마지막 시도(tries == 0)이면 바로 종료 처리
+    if (tries === 0) {
+      // 한국 레벨 지도 축소
+      flyToKorea(koreaCenter, koreaZoom);
+      // 정답 마커 추가
+      addCorrectMarker(correctCity);
 
-  // 정답 메시지 출력
-  endGameMessage(false);
+      // 정답 메시지 출력
+      endGameMessage(false);
 
-    return; // 함수 즉시 종료
+      return; // 함수 즉시 종료
+    }
+
+    // 지도 애니메이션 (마지막 시도가 아닐 경우)
+    currentZoom = Math.max(currentZoom - 1.2, 3);
+    map.setMinZoom(currentZoom);
+    map.setMaxBounds(null);
+
+    map.flyTo({
+      center: centerCoords,
+      zoom: currentZoom,
+      duration: 2000,
+      curve: 1.42,
+      essential: true
+    });
+
+    map.once('moveend', () => {
+      const newBounds = map.getBounds();
+      map.setMaxBounds(newBounds);
+    });
   }
-
-  // 지도 애니메이션 (마지막 시도가 아닐 경우)
-  currentZoom = Math.max(currentZoom - 1.2, 3);
-  map.setMinZoom(currentZoom);
-  map.setMaxBounds(null);
-
-  map.flyTo({
-    center: centerCoords,
-    zoom: currentZoom,
-    duration: 2000,
-    curve: 1.42,
-    essential: true
-  });
-
-  map.once('moveend', () => {
-    const newBounds = map.getBounds();
-    map.setMaxBounds(newBounds);
-  });
-}
 }
