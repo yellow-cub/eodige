@@ -369,6 +369,7 @@ function checkAnswer() {
     isAnsweredCorrectly = true;
 
     // ✅ 초록색 try-circle 표시
+    tries--;
     const currentTry = 6 - tries;
     const circle = document.querySelector(`.try-circle[data-index="${currentTry}"]`);
     if (circle) circle.classList.add("correct");
