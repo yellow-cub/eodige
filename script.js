@@ -1,32 +1,60 @@
-// city.json 불러와서 자동완성 연결
-let citiesData = []; // 전역에서 접근 가능하게 저장
+// =====================================
+// 🗺️ 전역 변수 선언
+// =====================================
+let citiesData = [];              // 도시 리스트
+let wrongMarkers = [];            // 오답 마커 리스트
+let tries = 6;                    // 남은 시도 횟수
+let isAnsweredCorrectly = false;  // 정답 여부 추적
+let justSelected = false;         // 자동완성 선택 직후 상태
+let map;
 
-// 오답 마커 선언
-let wrongMarkers = []; // 오답 마커 리스트 선언
+// 문제 설정
+//let currentZoom = 15.5; // 문제 줌 레벨
+//let centerCoords = [128.5780871349555, 35.87392573964598]; // 대구 달성공원
+//let correctAnswer = "대구광역시 중구"; // 정답 대구 중구
+let currentZoom = 13;
+let centerCoords = [128.3642078, 36.9801706]; // 단양중학교
+let correctAnswer = "충청북도 단양군"; //
+const koreaCenter = [127.76469909658498, 36.35893672161413]; // 남한 국토 중심 충청북도 옥천군 청성면 장연리 (대한민국 국토 중심 국토정중앙천문대 (128.0298, 38.0688))
+const koreaZoom = 4.5; // 전국 보이게 줌아웃 레벨 설정
 
-fetch("city.json")
-  .then((res) => res.json())
-  .then((cities) => {
-    citiesData = cities; // 나중에 위치정보 활용 가능
-    const input = document.getElementById("answerInput");
 
-    const cityNames = cities.map(city => city.name);
+// =====================================
+// 🧭 지도 초기화
+// =====================================
+// console.log("mapboxgl:", mapboxgl);
+// mapboxgl.accessToken = 'pk.eyJ1IjoibXMtbWFwLTAxIiwiYSI6ImNtZXZmbGl1dzBoeHYybm91ODcwNGdndDIifQ.5wyNe1GvdcwUvcNVCYhqUw';
+// const map = new mapboxgl.Map({
+//   container: 'map',
+//   style: 'mapbox://styles/ms-map-01/cmgv8grh8003p01sm9uth6a7r',
+//   //style: 'mapbox://styles/mapbox/satellite-v9',
+//   //style: 'mapbox://styles/mapbox/satellite-streets-v12',
+//   center: centerCoords,
+//   zoom: currentZoom,
+//   maxZoom: 18,
+// });
+// const el = document.createElement('div');
+// el.className = 'main-marker';
+// el.innerHTML = `<div class="marker-dot">?</div>`;
+// new mapboxgl.Marker(el).setLngLat(centerCoords).addTo(map);
 
-    new Awesomplete(input, {
-      list: cityNames,
-      minChars: 1,
-      maxItems: 10,
-      autoFirst: true
-    });
+// map.on('load', () => {                // 최초 지도 로드 후 bounds 설정
+//   map.setProjection('mercator');
+//   const bounds = map.getBounds();
+//   map.setMaxBounds(bounds);
+// });
 
-    // 선택된 도시명을 콘솔로 확인
-    input.addEventListener("awesomplete-selectcomplete", (e) => {
-      console.log("선택된 도시:", e.text.value);
-    });
-  })
-  .catch(err => console.error("도시 데이터 불러오기 실패:", err));
 
-// Haversine 함수
+// =====================================
+// 🧩 유틸 함수 (Utility Functions)
+// =====================================
+
+// 문자열 정규화 (공백/대소문자/기호 제거)
+function normalize(str) {
+  return str.toLowerCase().replace(/\s+/g, '').replace(/[^\p{L}\p{N}]/gu, '');
+}
+
+// 거리 계산 (Haversine 공식))
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371; // km
   const toRad = deg => deg * Math.PI / 180;
@@ -43,7 +71,7 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// 조사 체커
+// 조사 붙이기 (은/는 인식)
 function attachJosa(word, josaPair) {
   const code = word.charCodeAt(word.length - 1) - 0xac00;
   const jong = code % 28;
@@ -51,45 +79,12 @@ function attachJosa(word, josaPair) {
   return word + (hasBatchim ? josaPair[0] : josaPair[1]);
 }
 
-// CreateMarker 함수
-function createLabeledMarker(cityObj, distanceKm) {
-  const el = document.createElement('div');
-  el.className = 'custom-marker';
 
-  const color = distanceKm <= 50
-    ? '#ffcc00'
-    : distanceKm <= 100
-    ? '#ff8d28'
-    : '#ff383c';
-    const currentTry = 7 - tries; // try 횟수 마킹용
+// =====================================
+// 🧱 지도 관련 함수
+// =====================================
 
-  el.innerHTML = `
-    <div class="marker-label">${cityObj.tag}</div>
-    <div class="marker-dot" style="background-color: ${color};">
-      <span class="try-number">${currentTry}</span>
-    </div>
-  `;
-
-  const marker = new mapboxgl.Marker(el)
-    .setLngLat([cityObj.longitude, cityObj.latitude])
-    .addTo(map);
-
-  return marker;
-}
-
-// ✅ 대한민국 중심 좌표와 줌 레벨 (당신이 직접 입력)
-const koreaCenter = [127.76469909658498, 36.35893672161413]; // 남한 국토 중심 충청북도 옥천군 청성면 장연리 (대한민국 국토 중심 국토정중앙천문대 (128.0298, 38.0688))
-const koreaZoom = 4.5; // 전국 보이게 줌아웃 레벨 설정
-
-//let currentZoom = 15.5; // 문제 줌 레벨
-//let centerCoords = [128.5780871349555, 35.87392573964598]; // 대구 달성공원
-//let correctAnswer = "대구광역시 중구"; // 정답 대구 중구
-
-let currentZoom = 14;
-let centerCoords = [128.3642078, 36.9801706]; // 단양중학교
-let correctAnswer = "충청북도 단양군"; // 정답 충북 단양
-
-// 실패, 성공 시 한국 전체 레벨로 줌 레벨 확대, 지도 bound 함수
+// 게임 종료 시 지도 한국 전체로 확대
 function flyToKorea(center, zoom) {
   map.setMinZoom(zoom);
   map.setMaxBounds(null);
@@ -106,22 +101,104 @@ function flyToKorea(center, zoom) {
   });
 }
 
-// 정답 마커 추가 함수
-function addCorrectMarker(cityObj) {
+// 지도 마커 생성
+function createLabeledMarker(cityObj, distanceKm) {
   const el = document.createElement('div');
   el.className = 'custom-marker';
+
+  const color = distanceKm <= 50 ? '#ffcc00' : distanceKm <= 100 ? '#ff8d28' : '#ff383c';
+  const currentTry = 7 - tries; // try 횟수 마킹용
+
   el.innerHTML = `
-    <div class="marker-label" style="color:#34c759; font-weight:700; font-size:13px;">
-      ${cityObj.tag}
+    <div class="marker-label">${cityObj.tag}</div>
+    <div class="marker-dot" style="background-color: ${color};">
+      <span class="try-number">${currentTry}</span>
     </div>
-    <div class="marker-dot" style="background-color:#34c759; border:2px solid white; width:14px; height:14px; border-radius:50%;"></div>
   `;
-  new mapboxgl.Marker(el)
+
+  const marker = new mapboxgl.Marker(el)
     .setLngLat([cityObj.longitude, cityObj.latitude])
     .addTo(map);
+
+  return marker;
 }
 
-// 종료 메시지 함수
+function addCorrectMarker(cityObj) {
+  const mainMarkerEl = document.querySelector(".main-marker");
+
+  if (mainMarkerEl) {
+    // 기존 ? 마커 유지 + 오답용 .marker-label 스타일 재사용
+    mainMarkerEl.innerHTML = `
+      <div class="marker-dot">?</div>
+      <div class="marker-label correct-text">${cityObj.tag}</div>
+    `;
+  } else {
+    console.warn("⚠️ main-marker를 찾지 못했습니다.");
+  }
+}
+
+function flyToAllMarkers(correctCity) {
+  if (!map) {
+    console.warn("⚠️ map 객체가 아직 초기화되지 않았습니다.");
+    return;
+  }
+
+  const allCoords = [];
+
+  // 오답 마커 좌표 추출
+  wrongMarkers.forEach(marker => {
+    if (marker && marker.getLngLat) {
+      const pos = marker.getLngLat();
+      allCoords.push([pos.lng, pos.lat]);
+    }
+  });
+
+  // 정답 좌표 추가
+  if (correctCity && correctCity.longitude && correctCity.latitude) {
+    allCoords.push([correctCity.longitude, correctCity.latitude]);
+  }
+
+  // 좌표가 하나도 없으면 기본 flyTo
+  if (allCoords.length === 0) {
+    console.warn("⚠️ 표시할 마커가 없습니다. 기본 이동으로 대체합니다.");
+    map.flyTo({
+      center: koreaCenter,
+      zoom: 6,
+      duration: 2000
+    });
+    return;
+  }
+
+  // bounds 계산
+  const bounds = new mapboxgl.LngLatBounds();
+  allCoords.forEach(coord => bounds.extend(coord));
+
+  // fitBounds로 부드럽게 이동
+  map.fitBounds(bounds, {
+    padding: 80,
+    duration: 2000,
+    maxZoom: 8,
+    curve: 1.42,
+  });
+
+  // 한국 전체 범위로 bound 고정
+  const koreaBounds = new mapboxgl.LngLatBounds(
+    [124.5, 33.0],   // 남서쪽
+    [131.0, 38.6]    // 북동쪽
+  );
+
+  map.once("moveend", () => {
+    map.setMaxBounds(koreaBounds);
+  });
+
+  console.log("📍fitBounds 실행됨:", allCoords);
+}
+
+// =====================================
+// 🧠 게임 로직
+// =====================================
+
+// 종료 메시지
 function endGameMessage(isSuccess) {
   // 입력창과 버튼 숨기기
   document.getElementById("answerInput").style.display = "none";
@@ -144,63 +221,119 @@ function endGameMessage(isSuccess) {
   inputContainer.appendChild(retryMsg);
 }
 
-// 지도 초기 설정
-console.log("mapboxgl:", mapboxgl);
-mapboxgl.accessToken = 'pk.eyJ1IjoibXMtbWFwLTAxIiwiYSI6ImNtZXZmbGl1dzBoeHYybm91ODcwNGdndDIifQ.5wyNe1GvdcwUvcNVCYhqUw';
+// =====================================
+// 🔍 AutoComplete 초기화
+// =====================================
+fetch("city.json")
+  .then((res) => res.json())
+  .then((cities) => {
+    citiesData = cities;
 
-const map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/ms-map-01/cmgv8grh8003p01sm9uth6a7r',
-  //style: 'mapbox://styles/mapbox/satellite-v9',
-  //style: 'mapbox://styles/mapbox/satellite-streets-v12',
-  center: centerCoords,
-  zoom: currentZoom,
-  maxZoom: 18,
-});
+    // ✅ 랜덤 도시 하나 뽑기
+    const randomCity = cities[Math.floor(Math.random() * cities.length)];
+    centerCoords = [randomCity.longitude, randomCity.latitude];
+    correctAnswer = randomCity.name;
+    console.log("🎯 오늘의 문제:", correctAnswer);
 
-const el = document.createElement('div');
-el.className = 'main-marker';
-el.innerHTML = `<div class="marker-dot">?</div>`;
-new mapboxgl.Marker(el).setLngLat(centerCoords).addTo(map);
+    // ✅ 지도 초기화 (← 이 부분을 새로 추가)
+    mapboxgl.accessToken = 'pk.eyJ1IjoibXMtbWFwLTAxIiwiYSI6ImNtZXZmbGl1dzBoeHYybm91ODcwNGdndDIifQ.5wyNe1GvdcwUvcNVCYhqUw';
+    map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/ms-map-01/cmgv8grh8003p01sm9uth6a7r',
+      center: centerCoords,
+      zoom: currentZoom,
+      maxZoom: 18,
+    });
 
-let tries = 6;
+    // 메인 마커 ("?") 표시
+    const el = document.createElement('div');
+    el.className = 'main-marker';
+    el.innerHTML = `<div class="marker-dot">?</div>`;
+    new mapboxgl.Marker(el).setLngLat(centerCoords).addTo(map);
 
-function normalize(str) {
-  return str.toLowerCase().replace(/\s+/g, '').replace(/[^\p{L}\p{N}]/gu, '');
-}
+    // 최초 로드 후 bounds 제한 설정
+    map.on('load', () => {
+      map.setProjection('mercator');
+      const bounds = map.getBounds();
+      map.setMaxBounds(bounds);
+    });
 
-// 최초 지도 로드 후 bounds 설정
-map.on('load', () => {
-  map.setProjection('mercator');
-  const bounds = map.getBounds();
-  map.setMaxBounds(bounds);
-});
+    // ✅ AutoComplete 초기화
+    const input = document.getElementById("answerInput");
+    const cityNames = cities.map(city => city.name);
+
+    const autoCompleteJS = new autoComplete({
+      selector: "#answerInput",
+      placeHolder: "정답을 입력하세요",
+      data: { src: cityNames, cache: true },
+      resultsList: { maxResults: 10, noResults: false, tabSelect: true },
+      resultItem: { highlight: true },
+      events: {
+        input: {
+          selection: (event) => {
+            const value = event.detail.selection.value;
+            input.value = value;
+            justSelected = true;
+          },
+          results: () => {
+            const firstItem = document.querySelector(".autoComplete_result");
+            if (firstItem) {
+              firstItem.classList.add("autoComplete_selected");
+              firstItem.setAttribute("aria-selected", "true");
+            }
+          },
+        },
+      },
+    });
+  })
+  .catch((err) => console.error("도시 데이터 불러오기 실패:", err));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ✅ 자동완성과 도전 Enter 구분용 변수
-let justSelected = false;
-
 const inputEl = document.getElementById("answerInput");
 
-// ✅ Awesomplete 선택 시 플래그 설정
-inputEl.addEventListener("awesomplete-selectcomplete", () => {
-  justSelected = true;
-});
+// ✅ AutoComplete.js 선택 시 플래그 설정
+document.addEventListener("selection", (event) => {
+  // 자동완성에서 선택되면
+  if (event.detail && event.detail.selection) {
+    const value = event.detail.selection.value;
+    inputEl.value = value; // 입력창에 선택값 채워넣기
+    justSelected = true;
 
-// ✅ Enter 키로 도전 실행 (자동완성 선택 직후는 제외)
-inputEl.addEventListener("keyup", (event) => {
-  if (event.key === "Enter") {
-    if (justSelected) {
-      // 🔹 자동완성 선택 후 첫 Enter는 checkAnswer 실행 안 함
-      justSelected = false; // 플래그 초기화
-    } else {
-      // 🔹 다음 Enter부터 checkAnswer 실행
-      checkAnswer();
-    }
+    // 짧은 시간 뒤 플래그를 자동으로 해제 (Enter 키 방지용)
+    setTimeout(() => {
+      justSelected = false;
+    }, 150);
   }
 });
 
-// 🔸 정답 여부를 추적하는 전역 변수
-let isAnsweredCorrectly = false;
+// ✅ Enter 키로 도전 실행
+inputEl.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault(); // 기본 제출 동작 방지 (필수)
+    if (!justSelected) {
+      checkAnswer(); // 직접 입력 시 실행
+    }
+  }
+});
 
 function checkAnswer() {
   const inputEl = document.getElementById("answerInput");
@@ -291,8 +424,17 @@ else {
   }
   resultEl.innerText = `${attachJosa(guessedCity.tag, "은는")} ${formattedDistance} km 떨어져 있습니다.`;
 
-  // 입력칸 비우기
-  inputEl.value = "";
+    // ✅ AutoComplete.js 강제 초기화
+    requestAnimationFrame(() => {
+      inputEl.value = "";
+      inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+      inputEl.blur();
+      setTimeout(() => {
+        inputEl.value = "";
+        inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+        inputEl.focus();
+      }, 80);
+    });
 
   // 오답 마커 표시
   const marker = createLabeledMarker(guessedCity, distance);
@@ -302,7 +444,6 @@ else {
   if (tries === 0) {
     // 한국 레벨 지도 축소
   flyToKorea(koreaCenter, koreaZoom);
-
   // 정답 마커 추가
   addCorrectMarker(correctCity);
 
@@ -313,7 +454,7 @@ else {
   }
 
   // 지도 애니메이션 (마지막 시도가 아닐 경우)
-  currentZoom = Math.max(currentZoom - 1.7, 3);
+  currentZoom = Math.max(currentZoom - 1.2, 3);
   map.setMinZoom(currentZoom);
   map.setMaxBounds(null);
 

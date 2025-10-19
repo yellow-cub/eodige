@@ -7,7 +7,7 @@ body {
 }
 
 .container {
-  max-width:480px;
+  max-width: 480px;
   margin: 0 auto;
 }
 
@@ -25,20 +25,30 @@ body {
 }
 
 .input-area {
-  display: flex;               /* 가로 정렬 */
-  align-items: center;         /* 세로 가운데 맞춤 */
-  justify-content: center;     /* 중앙 정렬 */
-  gap: 10px;                   /* input과 button 사이 여백 */
-  width: 100%;                 /* container 폭 따라감 */
-  max-width: 600px;            /* 지도 폭과 동일 */
-  margin: 0 auto 1em;          /* 가운데 정렬 + 아래쪽 여백 */
-  flex-wrap: nowrap;           /* 줄바꿈 금지 */
+  display: flex;
+  /* 가로 정렬 */
+  align-items: center;
+  /* 세로 가운데 맞춤 */
+  justify-content: center;
+  /* 중앙 정렬 */
+  gap: 10px;
+  /* input과 button 사이 여백 */
+  width: 100%;
+  /* container 폭 따라감 */
+  max-width: 600px;
+  /* 지도 폭과 동일 */
+  margin: 0 auto 1em;
+  /* 가운데 정렬 + 아래쪽 여백 */
+  flex-wrap: nowrap;
+  /* 줄바꿈 금지 */
   box-sizing: border-box;
 }
 
 #answerInput {
-  flex: 1;                     /* 남은 공간 모두 차지 */
-  min-width: 0;                /* overflow 방지 */
+  flex: 1;
+  /* 남은 공간 모두 차지 */
+  min-width: 0;
+  /* overflow 방지 */
   font-size: 16px;
   padding: 10px;
   border-radius: 6px;
@@ -46,8 +56,18 @@ body {
   box-sizing: border-box;
 }
 
+/* 🚀 AutoComplete.js 하이라이트 색상 오버라이드 */
+.autoComplete_wrapper>ul>li mark {
+  color: #1e6ef4 !important;
+  /* 원하는 텍스트 색 (예: iOS 파랑) */
+  background-color: transparent !important;
+  /* 배경 제거 */
+  font-weight: 700;
+}
+
 button {
-  flex-shrink: 0;              /* 버튼 줄어들지 않게 */
+  flex-shrink: 0;
+  /* 버튼 줄어들지 않게 */
   padding: 10px 20px;
   font-size: 16px;
   border-radius: 6px;
@@ -60,7 +80,8 @@ button {
 }
 
 button:hover {
-  background-color: #333;      /* hover 시 살짝 어두워짐 */
+  background-color: #333;
+  /* hover 시 살짝 어두워짐 */
 }
 
 /* 도전 circle 스타일 설정 */
@@ -75,7 +96,8 @@ button:hover {
   width: 25px;
   height: 25px;
   border-radius: 50%;
-  background-color: #c7c7cc; /* 기본 회색 */
+  background-color: #c7c7cc;
+  /* 기본 회색 */
   border: 1.8px solid white;
   box-shadow: 0 0 0 2px #c7c7cc;
   color: white;
@@ -89,10 +111,34 @@ button:hover {
 }
 
 /* 활성화 색상 (거리별) */
-.try-circle.correct { background-color: #34c759; border: 1.8px solid white; box-shadow: 0 0 0 2px #34c759; color: white; } /* 초록색 (정답) */
-.try-circle.near { background-color: #ffcc00; border: 1.8px solid white; box-shadow: 0 0 0 2px #ffcc00; color: white; }
-.try-circle.mid  { background-color: #ff8d28; border: 1.8px solid white; box-shadow: 0 0 0 2px #ff8d28; color: white; }
-.try-circle.far  { background-color: #ff383c; border: 1.8px solid white; box-shadow: 0 0 0 2px #ff383c; color: white; }
+.try-circle.correct {
+  background-color: #34c759;
+  border: 1.8px solid white;
+  box-shadow: 0 0 0 2px #34c759;
+  color: white;
+}
+
+/* 초록색 (정답) */
+.try-circle.near {
+  background-color: #ffcc00;
+  border: 1.8px solid white;
+  box-shadow: 0 0 0 2px #ffcc00;
+  color: white;
+}
+
+.try-circle.mid {
+  background-color: #ff8d28;
+  border: 1.8px solid white;
+  box-shadow: 0 0 0 2px #ff8d28;
+  color: white;
+}
+
+.try-circle.far {
+  background-color: #ff383c;
+  border: 1.8px solid white;
+  box-shadow: 0 0 0 2px #ff383c;
+  color: white;
+}
 
 /* 지도 컨테이너 */
 .mapbox-container {
@@ -133,14 +179,14 @@ button:hover {
 
 .marker-label {
   font-size: 11px;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
   padding: 0px 4px;
   border-radius: 4px;
   margin-bottom: 2px;
   font-weight: 600;
   color: #333;
   white-space: nowrap;
-  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
 .marker-dot {
@@ -154,7 +200,7 @@ button:hover {
   color: white;
   font-size: 11px;
   font-weight: 700;
-  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
 .main-marker .marker-dot {
@@ -169,4 +215,16 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.main-marker {
+  display: flex;
+  flex-direction: column-reverse; /* ✅ label을 점 위로 이동 */
+  align-items: center;
+  z-index: 9999 !important;
+}
+
+.correct-text {
+  color: #34c759;        /* ✅ 글자색 */
+  font-weight: 700;      /* ✅ 굵게 */
 }

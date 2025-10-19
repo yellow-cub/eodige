@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>어디개 🐶</title>
 
-  <!-- 자동완성 Awesomeplete -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
-
-  <!-- ✅ 폰트 / 스타일 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.01.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
@@ -21,29 +19,27 @@
     <p class="subtitle">위성지도를 보고 어느 지역인지 맞춰보세요</p>
 
     <div class="input-area">
-      <input type="text" id="answerInput" class="awesomplete" placeholder="정답을 입력하세요" autocomplete="off"  />
+      <input type="text" id="answerInput" placeholder="정답을 입력하세요" autocomplete="off" />
       <button onclick="checkAnswer()">도전</button>
     </div>
 
-    <!-- 결과 텍스트 표시용 -->
     <p id="result">6번의 도전 기회가 있습니다.</p>
 
-  <div id="tryCircles" class="try-circles">
-    <div class="try-circle" data-index="1">1</div>
-    <div class="try-circle" data-index="2">2</div>
-    <div class="try-circle" data-index="3">3</div>
-    <div class="try-circle" data-index="4">4</div>
-    <div class="try-circle" data-index="5">5</div>
-    <div class="try-circle" data-index="6">6</div>
-  </div>
+    <div id="tryCircles" class="try-circles">
+      <div class="try-circle" data-index="1">1</div>
+      <div class="try-circle" data-index="2">2</div>
+      <div class="try-circle" data-index="3">3</div>
+      <div class="try-circle" data-index="4">4</div>
+      <div class="try-circle" data-index="5">5</div>
+      <div class="try-circle" data-index="6">6</div>
+    </div>
 
-    <!-- ✅ 지도 -->
     <div id="map" class="mapbox-container"></div>
 
   </div>
 
-  <!-- ✅ Mapbox & Script -->
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>
