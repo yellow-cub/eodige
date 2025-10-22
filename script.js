@@ -22,33 +22,6 @@ let correctAnswer = "충청북도 단양군"; //
 const koreaCenter = [127.76469909658498, 36.35893672161413]; // 남한 국토 중심 충청북도 옥천군 청성면 장연리 (대한민국 국토 중심 국토정중앙천문대 (128.0298, 38.0688))
 const koreaZoom = 4.5; // 전국 보이게 줌아웃 레벨 설정
 
-
-// =====================================
-// 🧭 지도 초기화
-// =====================================
-// console.log("mapboxgl:", mapboxgl);
-// mapboxgl.accessToken = 'pk.eyJ1IjoibXMtbWFwLTAxIiwiYSI6ImNtZXZmbGl1dzBoeHYybm91ODcwNGdndDIifQ.5wyNe1GvdcwUvcNVCYhqUw';
-// const map = new mapboxgl.Map({
-//   container: 'map',
-//   style: 'mapbox://styles/ms-map-01/cmgv8grh8003p01sm9uth6a7r',
-//   //style: 'mapbox://styles/mapbox/satellite-v9',
-//   //style: 'mapbox://styles/mapbox/satellite-streets-v12',
-//   center: centerCoords,
-//   zoom: currentZoom,
-//   maxZoom: 18,
-// });
-// const el = document.createElement('div');
-// el.className = 'main-marker';
-// el.innerHTML = `<div class="marker-dot">?</div>`;
-// new mapboxgl.Marker(el).setLngLat(centerCoords).addTo(map);
-
-// map.on('load', () => {                // 최초 지도 로드 후 bounds 설정
-//   map.setProjection('mercator');
-//   const bounds = map.getBounds();
-//   map.setMaxBounds(bounds);
-// });
-
-
 // =====================================
 // 🧩 유틸 함수 (Utility Functions)
 // =====================================
