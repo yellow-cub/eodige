@@ -12,6 +12,9 @@ let wrongLineSeq = 0;         // 라인 id 구분용 증가 카운터
 let mainLabelEl = null;
 let mainLabelMarker = null;
 
+let isGameOver = false;   // 종료 플래그
+let mainDotMarker = null; // 메인 점(원) 마커 - 전역으로
+
 // 문제 설정
 //let currentZoom = 15.5; // 문제 줌 레벨
 //let centerCoords = [128.5780871349555, 35.87392573964598]; // 대구 달성공원
@@ -56,6 +59,28 @@ function attachJosa(word, josaPair) {
   return word + (hasBatchim ? josaPair[0] : josaPair[1]);
 }
 
+// 거리 버킷: near / mid / far + 헥스 색상
+function getDistanceBucket(distanceKm) {
+  if (distanceKm <= 50) return { cls: 'near', color: '#ffcc00' };
+  if (distanceKm <= 100) return { cls: 'mid', color: '#ff8d28' };
+  return { cls: 'far', color: '#ff383c' };
+}
+
+// 거리 수치 표기: 100↑ 10단위 반올림, 10~99 정수, 10↓ 소수1자리(.0 제거)
+function formatDistance(distanceKm) {
+  if (distanceKm >= 100) return String(Math.round(distanceKm / 10) * 10);
+  if (distanceKm >= 10) return String(Math.floor(distanceKm));
+  return distanceKm.toFixed(1).replace(/\.0$/, '');
+}
+
+// 결과 문장 HTML (거리만 색/볼드)
+function renderResultHTML(tag, distanceKm) {
+  const { cls } = getDistanceBucket(distanceKm);
+  const text = formatDistance(distanceKm);
+  return `${attachJosa(tag, "은는")} <span class="distance-value ${cls}">${text} km</span> 떨어져 있습니다.`;
+}
+
+
 
 // =====================================
 // 🧱 지도 관련 함수
@@ -94,9 +119,7 @@ function addCorrectMarker(cityObj) {
 
 
 function createLabeledMarker(cityObj, distanceKm) {
-  const color = distanceKm <= 50 ? '#ffcc00'
-    : distanceKm <= 100 ? '#ff8d28'
-      : '#ff383c';
+  const { color } = getDistanceBucket(distanceKm);
   const currentTry = 6 - tries;
 
   // 1) 점(원)
@@ -108,8 +131,6 @@ function createLabeledMarker(cityObj, distanceKm) {
   const dotMarker = new mapboxgl.Marker({ element: dotEl, anchor: 'center', offset: [0, 0] })
     .setLngLat([cityObj.longitude, cityObj.latitude])
     .addTo(map);
-
-  // 점은 아래쪽 z-index
   dotMarker.getElement().style.zIndex = '10';
 
   // 2) 라벨
@@ -120,8 +141,6 @@ function createLabeledMarker(cityObj, distanceKm) {
   const labelMarker = new mapboxgl.Marker({ element: labelEl, anchor: 'bottom', offset: [0, -12] })
     .setLngLat([cityObj.longitude, cityObj.latitude])
     .addTo(map);
-
-  // 라벨도 아래쪽 z-index
   labelMarker.getElement().style.zIndex = '11';
 
   // 3) 점선(메인 점 ↔ 오답 점)
@@ -134,11 +153,6 @@ function createLabeledMarker(cityObj, distanceKm) {
     );
     if (map.isStyleLoaded()) run(); else map.once('load', run);
   }
-
-  // 필요하면 전역 배열에 보관
-  // guessDotMarkers.push(dotMarker);
-  // guessLabelMarkers.push(labelMarker);
-
   return dotMarker;
 }
 
@@ -248,26 +262,32 @@ function addDashedConnector(map, fromLngLat, toLngLat, color) {
 
 // 종료 메시지
 function endGameMessage(isSuccess) {
-  // 입력창과 버튼 숨기기
-  document.getElementById("answerInput").style.display = "none";
+  isGameOver = true;
+  const input = document.getElementById("answerInput");
+  const inputArea = input.parentElement;
+
+  // 🔒 현재 높이 캡처해서 고정
+  const h = inputArea.offsetHeight;
+  inputArea.style.height = h + 'px';
+
+  input.disabled = true;
+  input.style.display = "none";
   const challengeBtn = document.querySelector("button");
-  if (challengeBtn) challengeBtn.style.display = "none";
+  if (challengeBtn) {
+    challengeBtn.disabled = true;
+    challengeBtn.style.display = "none";
+  }
 
-  // 메시지 내용 설정
-  const retryMsg = document.createElement("div");
-  retryMsg.innerHTML = isSuccess
-    ? `<strong>내일 또 도전해보세요!</strong>`
-    : `<strong>내일 다시 도전해보세요!</strong>`;
+  inputArea.classList.add("game-ended");
 
-  retryMsg.style.marginTop = "12px";
-  retryMsg.style.fontSize = "1.1rem";
-  retryMsg.style.color = "black";
-  retryMsg.style.fontWeight = "600";
-  retryMsg.style.textAlign = "center";
-
-  const inputContainer = document.getElementById("answerInput").parentElement;
-  inputContainer.appendChild(retryMsg);
+  const retryMsg = document.createElement("span");
+  retryMsg.className = "retry-label";
+  retryMsg.textContent = isSuccess ? "내일 또 도전해보세요!" : "내일 다시 도전해보세요!";
+  inputArea.appendChild(retryMsg);
 }
+
+
+
 
 // =====================================
 // 🔍 AutoComplete 초기화
@@ -304,11 +324,10 @@ fetch("data/city.json")
     mainDotEl.className = 'marker-dot';
     mainDotEl.textContent = '?';
 
-    const mainDotMarker = new mapboxgl.Marker({ element: mainDotEl, anchor: 'center', offset: [0, 0] })
+    // ⛳ 전역 변수에 대입
+    mainDotMarker = new mapboxgl.Marker({ element: mainDotEl, anchor: 'center', offset: [0, 0] })
       .setLngLat(centerCoords)
       .addTo(map);
-
-    // ✅ z-index (래퍼 DOM에 적용)
     mainDotMarker.getElement().style.zIndex = '1000';
 
     mainMarkerLngLat = mainDotMarker.getLngLat();
@@ -340,7 +359,7 @@ fetch("data/city.json")
       selector: "#answerInput",
       placeHolder: "정답을 입력하세요",
       data: { src: cityNames, cache: true },
-      resultsList: { maxResults: 10, noResults: false, tabSelect: true },
+      resultsList: { maxResults: 50, noResults: false, tabSelect: true },
       resultItem: { highlight: true },
       events: {
         input: {
@@ -361,24 +380,6 @@ fetch("data/city.json")
     });
   })
   .catch((err) => console.error("도시 데이터 불러오기 실패:", err));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // ✅ 자동완성과 도전 Enter 구분용 변수
@@ -410,6 +411,8 @@ inputEl.addEventListener("keydown", (event) => {
 });
 
 function checkAnswer() {
+  if (isGameOver) return;  // ✅ 이미 끝났으면 아무 것도 안 함
+
   const inputEl = document.getElementById("answerInput");
   const userInput = inputEl.value.trim();
   const resultEl = document.getElementById("result");
@@ -466,69 +469,51 @@ function checkAnswer() {
     const guessedCity = match; // 오답 도시 객체
 
     const distance = haversine(
-      guessedCity.latitude,
-      guessedCity.longitude,
-      correctCity.latitude,
-      correctCity.longitude
+      guessedCity.latitude, guessedCity.longitude,
+      correctCity.latitude, correctCity.longitude
     );
 
     // 시도 카운트 (1~6)
     const currentTry = 6 - tries;
 
-    // 거리별 색상 분류
-    let colorClass;
-    if (distance <= 50) colorClass = "near";
-    else if (distance <= 100) colorClass = "mid";
-    else colorClass = "far";
+    // 거리별 색상/클래스
+    const { cls } = getDistanceBucket(distance);
 
     // 시도 원 색상 업데이트
     const circle = document.querySelector(`.try-circle[data-index="${currentTry}"]`);
-    if (circle) circle.classList.add(colorClass);
+    if (circle) circle.classList.add(cls);
 
-    // 결과 문장 업데이트
-    let formattedDistance;
-    if (distance >= 100) {
-      // 1의 자리 반올림 (136.5 → 140)
-      formattedDistance = Math.round(distance / 10) * 10;
-    } else if (distance >= 10) {
-      // 10~99.9 사이: 소수점 제거 (24.2 → 24)
-      formattedDistance = Math.floor(distance);
-    } else {
-      // 10 미만: 소수점 1자리 (9.37 → 9.4)
-      formattedDistance = distance.toFixed(1).replace(/\.0$/, '');
-    }
-    resultEl.innerText = `${attachJosa(guessedCity.tag, "은는")} ${formattedDistance} km 떨어져 있습니다.`;
+    // ✅ 결과 문장
+    resultEl.innerHTML = renderResultHTML(guessedCity.tag, distance);
 
-    // ✅ AutoComplete.js 강제 초기화
-    requestAnimationFrame(() => {
-      inputEl.value = "";
-      inputEl.dispatchEvent(new Event("input", { bubbles: true }));
-      inputEl.blur();
-      setTimeout(() => {
+    // ⛔ 마지막 시도 이후에는 리셋/포커스 금지
+    if (tries > 0) {
+      requestAnimationFrame(() => {
         inputEl.value = "";
         inputEl.dispatchEvent(new Event("input", { bubbles: true }));
-        inputEl.focus();
-      }, 80);
-    });
+        inputEl.blur();
+        setTimeout(() => {
+          inputEl.value = "";
+          inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+          inputEl.focus();
+        }, 80);
+      });
+    }
 
     // 오답 마커 표시
     const marker = createLabeledMarker(guessedCity, distance);
     wrongMarkers.push(marker);
 
-    // ✅ 마지막 시도(tries == 0)이면 바로 종료 처리
+    // ✅ 마지막 시도 처리
     if (tries === 0) {
-      // 한국 레벨 지도 축소
       flyToKorea(koreaCenter, koreaZoom);
-      // 정답 마커 추가
       addCorrectMarker(correctCity);
-
-      // 정답 메시지 출력
       endGameMessage(false);
-
-      return; // 함수 즉시 종료
+      return;
     }
 
-    // 지도 애니메이션 (마지막 시도가 아닐 경우)
+
+    // 지도 애니메이션
     currentZoom = Math.max(currentZoom - 1.2, 3);
     map.setMinZoom(currentZoom);
     map.setMaxBounds(null);

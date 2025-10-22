@@ -65,27 +65,27 @@ body {
   box-shadow: var(--shadow-sm);
 
   display: flex;
-  /* 가로 정렬 */
-  align-items: center;
-  /* 세로 가운데 맞춤 */
-  justify-content: center;
-  /* 중앙 정렬 */
+  align-items: stretch;
+  justify-content: flex-start;
   gap: 10px;
-  /* input과 button 사이 여백 */
   width: 100%;
-  /* container 폭 따라감 */
   max-width: 600px;
-  /* 지도 폭과 동일 */
   margin: 0 auto 1em;
-  /* 가운데 정렬 + 아래쪽 여백 */
   flex-wrap: nowrap;
-  /* 줄바꿈 금지 */
   box-sizing: border-box;
 }
 
+/* 입력을 감싸는 div(autoComplete.js가 자동으로 생성) */
+.input-area .autoComplete_wrapper {
+  flex: 1 1 auto;  /* 남는 공간 전부 차지 */
+  min-width: 0;    /* 내용 길어도 줄바꿈 없이 축소 허용 */
+}
+
+
 #answerInput {
-  flex: 1;
+  flex: 1 1 auto; 
   min-width: 0;
+  width: 100%;
 
   background: #fff;
   outline: none;
@@ -116,6 +116,15 @@ body {
   background: transparent !important;
   font-weight: 700;
 }
+
+.input-area button {
+  flex: 0 0 auto;           /* 버튼은 내용만큼만, 줄어들지 않음 */
+  height: var(--control-h); /* 입력창과 같은 높이 */
+  padding: 0 16px;          /* 세로패딩 0으로 라인 높이 맞춤 */
+  line-height: calc(var(--control-h) - 2px);
+  white-space: nowrap;      /* '도전'이 줄바꿈되지 않게 */
+}
+
 
 /* 버튼 (iOS 버튼 느낌) */
 button {
@@ -247,7 +256,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0088ff;
+  background: rgba(0, 0, 0, .5);
   /* JS에서 덮어씀 */
 }
 
@@ -270,6 +279,40 @@ button:focus-visible {
 }
 
 .correct-text {
-  color: #333;
+  color: #34c759;
   font-weight: 700;
+}
+
+
+.distance-value { font-weight: 700; }
+.distance-value.near { color: #ffcc00; }
+.distance-value.mid  { color: #ff8d28; }
+.distance-value.far  { color: #ff383c; }
+
+
+
+
+/* 종료 상태에서 input-area 정중앙 정렬 */
+.input-area.game-ended {
+  justify-content: center !important;  /* 가로 가운데 */
+  align-items: center !important;      /* 세로 가운데 */
+  gap: 0;                              /* 여백 제거 */
+  min-height: var(--control-h);        /* 입력 높이만큼 공간 확보 */
+  padding: 8px 14px;
+}
+
+/* 자동완성 래퍼가 빈 박스로 남아 정렬 깨질 수 있으니 숨김 */
+.input-area.game-ended .autoComplete_wrapper { display: none !important; }
+
+/* 텍스트 톤(너무 두껍지 않게) */
+.retry-label{
+  display: flex;                     /* 텍스트가 진짜 중앙에 오도록 */
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
 }
