@@ -1,30 +1,69 @@
+/* =========================================================
+   Apple Light Theme — minimal overrides
+   팔레트/그림자/라운드/포커스 링 통일
+   ========================================================= */
+:root {
+  --bg: #f5f5f7;
+  /* 시스템 라이트 배경 */
+  --card: #ffffff;
+  /* 카드/컨테이너 */
+  --text: #1d1d1f;
+  /* 기본 텍스트 */
+  --subtext: #6e6e73;
+  /* 보조 텍스트 */
+  --border: #e5e5ea;
+  /* 얇은 경계선 */
+  --accent: #0a84ff;
+  /* iOS systemBlue */
+  --accent-press: #0060df;
+  /* 눌림 */
+  --accent-hover: #0c8eff;
+  /* 호버 */
+  --ring: rgba(10, 132, 255, .35);
+  /* 포커스 링 */
+  --radius: 12px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .06), 0 1px 8px rgba(0, 0, 0, .05);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, .08);
+  --control-h: 44px;
+}
+
+
 body {
   margin: 0;
-  font-family: 'Noto Sans KR', sans-serif;
-  background-color: #f9f9f9;
+  font-family: "Chiron GoRound TC", "Noto Sans KR", sans-serif;
+  background: var(--bg);
+  color: var(--text);
   text-align: center;
   padding: 0px 20px
 }
 
 .container {
-  max-width: 480px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
 .title {
   font-size: 2.0rem;
   font-weight: 800;
+  letter-spacing: .2px;
+  color: var(--text);
   margin-bottom: 0.0em;
 }
 
 .subtitle {
   font-size: 1.0rem;
   font-weight: 500;
-  color: #444;
+  color: var(--subtext);
   margin-bottom: 1.0em;
 }
 
 .input-area {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: var(--shadow-sm);
+
   display: flex;
   /* 가로 정렬 */
   align-items: center;
@@ -46,42 +85,62 @@ body {
 
 #answerInput {
   flex: 1;
-  /* 남은 공간 모두 차지 */
   min-width: 0;
-  /* overflow 방지 */
+
+  background: #fff;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  height: var(--control-h);
+  padding: 0 14px;
+  /* 세로 padding 0 → 정확한 높이 */
+  line-height: calc(var(--control-h) - 2px);
+  /* border 고려 */
   font-size: 16px;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
+  border-radius: 9px;
   box-sizing: border-box;
 }
 
-/* 🚀 AutoComplete.js 하이라이트 색상 오버라이드 */
+#answerInput::placeholder {
+  color: black;
+}
+
+#answerInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
 .autoComplete_wrapper>ul>li mark {
-  color: #1e6ef4 !important;
-  /* 원하는 텍스트 색 (예: iOS 파랑) */
-  background-color: transparent !important;
-  /* 배경 제거 */
+  color: var(--accent) !important;
+  background: transparent !important;
   font-weight: 700;
 }
 
+/* 버튼 (iOS 버튼 느낌) */
 button {
-  flex-shrink: 0;
-  /* 버튼 줄어들지 않게 */
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: none;
-  background-color: black;
-  color: white;
-  cursor: pointer;
-  height: 100%;
-  transition: background 0.2s ease;
+  padding: 12px 18px;
+  font-weight: 700;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid rgba(0, 0, 0, .04);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset, var(--shadow-sm);
+  transition: background .15s ease, transform .05s ease, box-shadow .15s ease;
 }
 
 button:hover {
-  background-color: #333;
-  /* hover 시 살짝 어두워짐 */
+  background: var(--accent-hover);
+}
+
+button:active {
+  background: var(--accent-press);
+  transform: translateY(1px);
+}
+
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--ring), var(--shadow-sm);
 }
 
 /* 도전 circle 스타일 설정 */
@@ -93,14 +152,15 @@ button:hover {
 }
 
 .try-circle {
-  width: 25px;
-  height: 25px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background-color: #c7c7cc;
-  /* 기본 회색 */
-  border: 1.8px solid white;
+  background: #c7c7cc;
+  /* 진한 회색 */
+  border: 1px solid #ffffff;
+  /* 흰 테두리 */
   box-shadow: 0 0 0 2px #c7c7cc;
-  color: white;
+  color: #fff;
   font-size: 13px;
   font-weight: 700;
   display: flex;
@@ -110,58 +170,62 @@ button:hover {
   user-select: none;
 }
 
-/* 활성화 색상 (거리별) */
+/* 상태별도 기본과 동일한 구조: 흰색 border + 컬러 링 */
 .try-circle.correct {
-  background-color: #34c759;
-  border: 1.8px solid white;
+  background: #34c759;
+  border: 1px solid #ffffff;
   box-shadow: 0 0 0 2px #34c759;
-  color: white;
 }
 
-/* 초록색 (정답) */
 .try-circle.near {
-  background-color: #ffcc00;
-  border: 1.8px solid white;
+  background: #ffcc00;
+  border: 1px solid #ffffff;
   box-shadow: 0 0 0 2px #ffcc00;
-  color: white;
 }
 
 .try-circle.mid {
-  background-color: #ff8d28;
-  border: 1.8px solid white;
+  background: #ff8d28;
+  border: 1px solid #ffffff;
   box-shadow: 0 0 0 2px #ff8d28;
-  color: white;
 }
 
 .try-circle.far {
-  background-color: #ff383c;
-  border: 1.8px solid white;
+  background: #ff383c;
+  border: 1px solid #ffffff;
   box-shadow: 0 0 0 2px #ff383c;
-  color: white;
 }
+
 
 /* 지도 컨테이너 */
 .mapbox-container {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
+  background: var(--card);
+  border-radius: var(--radius);
+  /* 살짝 띄우는 그림자 + 바닥 그림자 한 번 더 */
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .8) inset,
+    /* 상단 하이라이트 */
+    0 2px 8px rgba(0, 0, 0, .08),
+    0 14px 28px rgba(0, 0, 0, .10);
+  /* 깊이감 업 */
+}
+
+/* hover 시 살짝 더 떠오르게 */
+.mapbox-container:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .85) inset,
+    0 4px 12px rgba(0, 0, 0, .10),
+    0 18px 36px rgba(0, 0, 0, .12);
 }
 
 #result {
   font-size: 1.1rem;
-  color: #333;
+  color: var(--subtext);
   margin-top: 15px;
-}
-
-/* 지도와 마스크 컨테이너 */
-#mapWrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 10px;
-  overflow: hidden;
 }
 
 /* 실제 지도 */
@@ -170,61 +234,42 @@ button:hover {
   height: 100%;
 }
 
-.custom-marker {
+/* 점(원) */
+.marker-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, .3);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
+  justify-content: center;
+  background: #0088ff;
+  /* JS에서 덮어씀 */
 }
 
+/* 라벨 */
 .marker-label {
-  font-size: 11px;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 0px 4px;
+  display: inline-block;
+  /* 퍼지지 않게 */
+  white-space: nowrap;
+  margin: 0;
+  /* 위치는 offset으로만 */
+  padding: 0 3px;
   border-radius: 4px;
-  margin-bottom: 2px;
+  font-size: 12px;
   font-weight: 600;
   color: #333;
-  white-space: nowrap;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
-}
+  background: rgba(255, 255, 255, .85);
+  box-shadow: 0 0 2px rgba(0, 0, 0, .2);
 
-.marker-dot {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 1.5px solid #f2f2f7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-}
 
-.main-marker .marker-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background-color: #000;
-  border: 2px solid #fff;
-  color: #fff;
-  font-weight: 700;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.main-marker {
-  display: flex;
-  flex-direction: column-reverse; /* ✅ label을 점 위로 이동 */
-  align-items: center;
-  z-index: 9999 !important;
 }
 
 .correct-text {
-  color: #34c759;        /* ✅ 글자색 */
-  font-weight: 700;      /* ✅ 굵게 */
+  color: #333;
+  font-weight: 700;
 }

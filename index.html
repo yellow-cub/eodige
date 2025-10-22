@@ -4,18 +4,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>어디개 🐶</title>
+  <title>🗺️ 오늘지도</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.01.min.css">
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.01.min.css">
+
+  <!-- Font (Google Noto Sans KR, Chiron Goround TC) -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap" rel="stylesheet">
+
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet" />
+
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:,"> <!-- 빈 파비콘으로 404 제거 -->
+
 </head>
 
 <body>
   <div class="container">
-    <h1 class="title">🐾 어디개 🐶</h1>
+
+    <h1 class="title">🗺️ 오늘지도</h1>
     <p class="subtitle">위성지도를 보고 어느 지역인지 맞춰보세요</p>
 
     <div class="input-area">
@@ -40,6 +49,7 @@
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
   <script src="script.js"></script>
+
 </body>
 
 </html>

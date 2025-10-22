@@ -7,6 +7,10 @@ let tries = 6;                    // 남은 시도 횟수
 let isAnsweredCorrectly = false;  // 정답 여부 추적
 let justSelected = false;         // 자동완성 선택 직후 상태
 let map;
+let mainMarkerLngLat = null;  // 메인(?) 마커 좌표 저장
+let wrongLineSeq = 0;         // 라인 id 구분용 증가 카운터
+let mainLabelEl = null;
+let mainLabelMarker = null;
 
 // 문제 설정
 //let currentZoom = 15.5; // 문제 줌 레벨
@@ -101,40 +105,68 @@ function flyToKorea(center, zoom) {
   });
 }
 
-// 지도 마커 생성
+// 지도 오답 마커 생성
+function addCorrectMarker(cityObj) {
+  if (!mainLabelMarker || !mainMarkerLngLat) return;
+
+  const el = mainLabelMarker.getElement();
+  el.textContent = cityObj.tag;
+  el.classList.add('correct-text');
+
+  mainLabelMarker.setLngLat([mainMarkerLngLat.lng, mainMarkerLngLat.lat]);
+  // ✅ 다시 한 번 보장
+  mainLabelMarker.getElement().style.zIndex = '1001';
+  mainDotMarker.getElement().style.zIndex = '1000';
+}
+
+
 function createLabeledMarker(cityObj, distanceKm) {
-  const el = document.createElement('div');
-  el.className = 'custom-marker';
+  const color = distanceKm <= 50 ? '#ffcc00'
+    : distanceKm <= 100 ? '#ff8d28'
+      : '#ff383c';
+  const currentTry = 6 - tries;
 
-  const color = distanceKm <= 50 ? '#ffcc00' : distanceKm <= 100 ? '#ff8d28' : '#ff383c';
-  const currentTry = 6 - tries; // try 횟수 마킹용
+  // 1) 점(원)
+  const dotEl = document.createElement('div');
+  dotEl.className = 'marker-dot';
+  dotEl.style.backgroundColor = color;
+  dotEl.innerHTML = `<span class="try-number">${currentTry}</span>`;
 
-  el.innerHTML = `
-    <div class="marker-label">${cityObj.tag}</div>
-    <div class="marker-dot" style="background-color: ${color};">
-      <span class="try-number">${currentTry}</span>
-    </div>
-  `;
-
-  const marker = new mapboxgl.Marker(el)
+  const dotMarker = new mapboxgl.Marker({ element: dotEl, anchor: 'center', offset: [0, 0] })
     .setLngLat([cityObj.longitude, cityObj.latitude])
     .addTo(map);
 
-  return marker;
-}
+  // 점은 아래쪽 z-index
+  dotMarker.getElement().style.zIndex = '10';
 
-function addCorrectMarker(cityObj) {
-  const mainMarkerEl = document.querySelector(".main-marker");
+  // 2) 라벨
+  const labelEl = document.createElement('div');
+  labelEl.className = 'marker-label';
+  labelEl.textContent = cityObj.tag;
 
-  if (mainMarkerEl) {
-    // 기존 ? 마커 유지 + 오답용 .marker-label 스타일 재사용
-    mainMarkerEl.innerHTML = `
-      <div class="marker-dot">?</div>
-      <div class="marker-label correct-text">${cityObj.tag}</div>
-    `;
-  } else {
-    console.warn("⚠️ main-marker를 찾지 못했습니다.");
+  const labelMarker = new mapboxgl.Marker({ element: labelEl, anchor: 'bottom', offset: [0, -12] })
+    .setLngLat([cityObj.longitude, cityObj.latitude])
+    .addTo(map);
+
+  // 라벨도 아래쪽 z-index
+  labelMarker.getElement().style.zIndex = '11';
+
+  // 3) 점선(메인 점 ↔ 오답 점)
+  if (mainMarkerLngLat) {
+    const run = () => addDashedConnector(
+      map,
+      mainMarkerLngLat,
+      [cityObj.longitude, cityObj.latitude],
+      color
+    );
+    if (map.isStyleLoaded()) run(); else map.once('load', run);
   }
+
+  // 필요하면 전역 배열에 보관
+  // guessDotMarkers.push(dotMarker);
+  // guessLabelMarkers.push(labelMarker);
+
+  return dotMarker;
 }
 
 function flyToAllMarkers(correctCity) {
@@ -194,6 +226,49 @@ function flyToAllMarkers(correctCity) {
   console.log("📍fitBounds 실행됨:", allCoords);
 }
 
+function addDashedConnector(map, fromLngLat, toLngLat, color) {
+  // 고유 id 발급
+  const sourceId = `guess-line-src-${++wrongLineSeq}`;
+  const layerId = `guess-line-${wrongLineSeq}`;
+
+  // GeoJSON 소스 추가
+  map.addSource(sourceId, {
+    type: 'geojson',
+    data: {
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [fromLngLat.lng, fromLngLat.lat],
+          [toLngLat[0], toLngLat[1]],
+        ],
+      },
+    },
+  });
+
+  // 점선 라인 레이어 추가
+  map.addLayer({
+    id: layerId,
+    type: 'line',
+    source: sourceId,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': color,
+      'line-opacity': 0.95,
+      'line-width': [
+        'interpolate', ['linear'], ['zoom'],
+        3, 1.5,   // 저배율
+        8, 2.0,   // 중간
+        12, 2.5   // 고배율
+      ],
+      'line-dasharray': [2, 2], // 점선 패턴
+    },
+  });
+
+  return layerId;
+}
+
+
 // =====================================
 // 🧠 게임 로직
 // =====================================
@@ -224,7 +299,7 @@ function endGameMessage(isSuccess) {
 // =====================================
 // 🔍 AutoComplete 초기화
 // =====================================
-fetch("city.json")
+fetch("data/city.json")
   .then((res) => res.json())
   .then((cities) => {
     citiesData = cities;
@@ -243,13 +318,39 @@ fetch("city.json")
       center: centerCoords,
       zoom: currentZoom,
       maxZoom: 18,
+      // 👇 회전/피치 제스처 기본 차단
+      dragRotate: false,
+      pitchWithRotate: false,
     });
+    map.dragRotate.disable();             // 마우스로 지도 회전 막기
+    map.touchZoomRotate.disableRotation(); // 모바일 두손가락 회전 막기
+    map.touchPitch.disable();             // (선택) 두손가락 상하 기울이기 막기
 
-    // 메인 마커 ("?") 표시
-    const el = document.createElement('div');
-    el.className = 'main-marker';
-    el.innerHTML = `<div class="marker-dot">?</div>`;
-    new mapboxgl.Marker(el).setLngLat(centerCoords).addTo(map);
+    // 메인 점(원)
+    const mainDotEl = document.createElement('div');
+    mainDotEl.className = 'marker-dot';
+    mainDotEl.textContent = '?';
+
+    const mainDotMarker = new mapboxgl.Marker({ element: mainDotEl, anchor: 'center', offset: [0, 0] })
+      .setLngLat(centerCoords)
+      .addTo(map);
+
+    // ✅ z-index (래퍼 DOM에 적용)
+    mainDotMarker.getElement().style.zIndex = '1000';
+
+    mainMarkerLngLat = mainDotMarker.getLngLat();
+
+    // 메인 라벨 (초기엔 빈 텍스트)
+    mainLabelEl = document.createElement('div');
+    mainLabelEl.className = 'marker-label';
+    mainLabelEl.textContent = '';
+
+    mainLabelMarker = new mapboxgl.Marker({ element: mainLabelEl, anchor: 'bottom', offset: [0, -12] })
+      .setLngLat(centerCoords)
+      .addTo(map);
+
+    // ✅ 라벨 더 위
+    mainLabelMarker.getElement().style.zIndex = '1001';
 
     // 최초 로드 후 bounds 제한 설정
     map.on('load', () => {
@@ -473,3 +574,4 @@ function checkAnswer() {
     });
   }
 }
+
